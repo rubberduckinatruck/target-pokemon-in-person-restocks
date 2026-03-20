@@ -13,11 +13,11 @@ steps:
 - name: Set up Python
 uses: actions/setup-python@v5
 with:
-python-version: '3.12'
+python-version:'3.12'
 - name: Install dependencies
 run: pip install -r requirements.txt
 - name: Run monitor
 env:
-TARGET_API_KEY: ${{ secrets.TARGET_API_KEY }} # optional if key rotates
+TARGET_API_KEY: ${{ secrets.TARGET_API_KEY }}
 DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 run: python target_monitor.py
