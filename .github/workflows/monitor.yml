@@ -2,14 +2,17 @@ name: Target Restock Checker
 
 on:
   schedule:
-    - cron: '*/10 16-23 * * 1-5'
-    - cron: '*/10 0-1 * * 2-6'
+    - cron: '*/10 16-23 * * 1-5'  # Mon–Fri 16:00–23:59 UTC
+    - cron: '*/10 0-2 * * 2-6'    # Tue–Sat 00:00–02:59 UTC (extend if needed)
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -18,6 +21,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -29,3 +33,12 @@ jobs:
           TARGET_API_KEY: ${{ secrets.TARGET_API_KEY }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python target_monitor.py
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          curl -s -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d '{"content": "⚠️ Target Restock Checker workflow failed!"}'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
